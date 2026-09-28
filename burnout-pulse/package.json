@@ -1,0 +1,16 @@
+{
+  "name": "burnout-pulse",
+  "version": "13.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A private weekly burnout check-in and reflection tool for physicians and surgeons.",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "npx serve public",
+    "test": "node --test tests/unit.test.mjs tests/api.test.mjs",
+    "test:e2e": "node tests/e2e.mjs",
+    "test:db": "bash tests/db.sh",
+    "docs": "node tools/build-docs.mjs"
+  },
+  "license": "UNLICENSED"
+}

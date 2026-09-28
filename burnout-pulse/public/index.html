@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="referrer" content="no-referrer" />
+<meta name="description" content="A private weekly burnout check-in and reflection tool for physicians and surgeons. Not a diagnostic instrument." />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#3b4332" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1c211a" media="(prefers-color-scheme: dark)" />
+<title>Burnout Pulse</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath d='M7 25h7l3.5-9 6 17 4-12 3 4h10' fill='none' stroke='%239a4a25' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="styles.css" />
+<script src="config.js" defer></script>
+<script src="safety.js" defer></script>
+<script src="core.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<noscript>
+  <p class="noscript">Burnout Pulse needs JavaScript. If you need help right now, call or text 988, available 24/7.</p>
+</noscript>
+
+<div class="app" id="app">
+
+  <!-- ===== SIGN-IN ===== -->
+  <section class="gate" id="gate" aria-labelledby="gateTitle">
+    <svg class="mark mark-lg" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21"/><path d="M7 25h7l3.5-9 6 17 4-12 3 4h10"/></svg>
+    <h1 id="gateTitle">A weekly check&#8209;in, before the week <em>checks in on you</em>.</h1>
+    <p class="gate-sub">Six questions, about two minutes. Your trend over time, advice keyed to your answers, and a place to think out loud.</p>
+
+    <form class="card gate-card" id="authForm" novalidate>
+      <div id="formError" class="form-error" role="alert" hidden></div>
+      <div class="field">
+        <label for="emailInput">Email</label>
+        <input type="email" id="emailInput" name="email" autocomplete="username" required spellcheck="false" />
+      </div>
+      <div class="field" id="nameField" hidden>
+        <label for="nameInput">First name</label>
+        <input type="text" id="nameInput" name="name" autocomplete="given-name" maxlength="40" />
+      </div>
+      <div class="field">
+        <label for="passInput">Passphrase</label>
+        <input type="password" id="passInput" name="passphrase" autocomplete="current-password" required minlength="12" aria-describedby="passHint" />
+        <p class="field-hint" id="passHint">Your passphrase encrypts your data on this device. It cannot be recovered. If you forget it, your history is gone.</p>
+      </div>
+      <button class="btn btn-primary btn-block" id="authBtn" type="submit">Sign in</button>
+      <p class="gate-switch">
+        <span id="switchPrompt">New here?</span>
+        <button type="button" class="link-btn" id="switchBtn">Create an account</button>
+      </p>
+    </form>
+
+    <div class="gate-note">
+      <svg class="icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <p>Your check-ins and notes are encrypted in this browser and never leave it. Use a device you control, not a shared workstation. If you turn on the live AI coach, only the messages you send it leave this device.</p>
+    </div>
+    <p class="gate-crisis">Need help right now? Call or text <a href="tel:988">988</a>, 24/7.</p>
+    <p class="gate-fatal" id="cryptoMissing" role="alert" hidden>This browser can't encrypt data securely, so Burnout Pulse won't store anything here. Open it over HTTPS in a current version of Chrome, Edge, Firefox, or Safari.</p>
+  </section>
+
+  <!-- ===== TOP BAR ===== -->
+  <header class="topbar" id="topbar" hidden>
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg class="mark mark-sm" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="21"/><path d="M7 25h7l3.5-9 6 17 4-12 3 4h10"/></svg>
+        <span class="brand-name">Burnout <em>Pulse</em></span>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn" id="lockBtn" type="button" aria-label="Lock">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <span class="icon-btn-label">Lock</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell" id="main" tabindex="-1" hidden>
+
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab" role="tab" id="tab-checkin" aria-controls="view-checkin" aria-selected="true" type="button">Check-in</button>
+      <button class="tab" role="tab" id="tab-trend" aria-controls="view-trend" aria-selected="false" tabindex="-1" type="button">Trend</button>
+      <button class="tab" role="tab" id="tab-coach" aria-controls="view-coach" aria-selected="false" tabindex="-1" type="button">Coach</button>
+      <button class="tab" role="tab" id="tab-settings" aria-controls="view-settings" aria-selected="false" tabindex="-1" type="button">Settings</button>
+    </nav>
+
+    <!-- ===== CHECK-IN ===== -->
+    <section class="view" role="tabpanel" id="view-checkin" aria-labelledby="tab-checkin">
+      <div class="greeting">
+        <p class="eyebrow" id="weekTag">This week</p>
+        <h2 id="greetLine" tabindex="-1">How are you, <em>really</em>?</h2>
+        <p>Think about the past seven days. There's no good or bad score here, only an accurate one.</p>
+      </div>
+
+      <div class="card pulse-card">
+        <div class="ring-wrap" aria-hidden="true">
+          <svg class="ring-svg" viewBox="0 0 150 150">
+            <circle class="ring-track" cx="75" cy="75" r="64" />
+            <circle class="ring-fill" id="ringFill" cx="75" cy="75" r="64" />
+          </svg>
+          <div class="ring-center">
+            <span class="ring-score" id="ringScore">&mdash;</span>
+            <span class="ring-label">of 100</span>
+          </div>
+        </div>
+        <div class="pulse-read" aria-live="polite">
+          <span class="pill" id="pulseBand" data-band="none">Not scored yet</span>
+          <h3 id="pulseTitle">Your score, once you finish</h3>
+          <p id="pulseDesc">Answer the six questions below. Higher scores mean more strain.</p>
+        </div>
+      </div>
+
+      <form id="checkinForm" novalidate>
+        <div class="section-head">
+          <h3>Six questions</h3>
+          <span class="count" id="dimCount" aria-live="polite">0 of 6 answered</span>
+        </div>
+        <div class="dims" id="dims"></div>
+
+        <details class="card context" id="contextBox">
+          <summary>
+            <span class="context-title">This week in surgery <span class="optional">optional</span></span>
+            <span class="context-sub">Not part of your score. It tailors the advice on your Trend page.</span>
+          </summary>
+          <div class="context-body">
+            <div class="field field-inline">
+              <label for="ctxHours">Hours worked this week</label>
+              <input type="number" id="ctxHours" inputmode="numeric" min="0" max="168" step="1" />
+            </div>
+            <div class="field field-inline">
+              <label for="ctxCall">Nights on call</label>
+              <select id="ctxCall">
+                <option value="">Not saying</option>
+                <option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                <option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option>
+              </select>
+            </div>
+            <label class="check">
+              <input type="checkbox" id="ctxAdverse" />
+              <span>A complication or patient outcome is weighing on me</span>
+            </label>
+          </div>
+        </details>
+
+        <div class="savebar">
+          <div class="savebar-inner">
+            <div class="savebar-text">
+              <strong id="saveTitle">Answer all six to save</strong>
+              <span id="saveSub">Saved encrypted on this device only.</span>
+            </div>
+            <button class="btn btn-primary" id="saveBtn" type="submit" aria-disabled="true">Save check-in</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===== TREND ===== -->
+    <section class="view" role="tabpanel" id="view-trend" aria-labelledby="tab-trend" hidden>
+      <div class="greeting">
+        <p class="eyebrow">Looking back</p>
+        <h2 tabindex="-1">Your <em>trend</em></h2>
+        <p>One hard week is one hard week. Three in a row is a pattern worth acting on.</p>
+      </div>
+      <div class="card alert-card" id="sustainedCard" role="note" hidden>
+        <h3>Three check-ins in a row in the depleted range</h3>
+        <p>This pattern is exactly what the score is for. Please talk to a person this week: a colleague you trust, your chief or program director, your institution's wellbeing office, or one of the lines below. You don't have to decide anything before you call.</p>
+      </div>
+      <div id="chartBody"></div>
+      <div id="historyBody"></div>
+      <div id="adviceBlock" hidden>
+        <div class="section-head"><h3>What might help</h3></div>
+        <p class="muted">Based on your most recent check-in. Starting points, not prescriptions.</p>
+        <div class="advice-wrap" id="adviceWrap"></div>
+      </div>
+      <details class="card howscore">
+        <summary>How the score works</summary>
+        <p>Each answer is worth 0 to 4. The six answers are added and scaled to 0 to 100, so higher means more strain. The bands (0 to 24, 25 to 49, 50 to 74, 75 to 100) are reading aids, not clinical cut-offs. The questions borrow ideas from burnout research (exhaustion, detachment, reduced sense of accomplishment), but this is not the Maslach Burnout Inventory or any other validated instrument, and it can't diagnose burnout, depression, or anything else.</p>
+      </details>
+      <div class="card support" id="supportCard"></div>
+    </section>
+
+    <!-- ===== COACH ===== -->
+    <section class="view" role="tabpanel" id="view-coach" aria-labelledby="tab-coach" hidden>
+      <div class="greeting coach-head">
+        <p class="eyebrow">Reflection coach <span class="badge" id="coachBadge">Offline prompts</span></p>
+        <h2 tabindex="-1">Talk it <em>through</em></h2>
+        <p id="coachLead">A place to think out loud. It uses your latest check-in to ask better questions. It is not a therapist and not a person.</p>
+      </div>
+
+      <div class="card consent-card" id="consentCard" hidden>
+        <h3>Turn on the live AI coach?</h3>
+        <p>The live coach is an AI. To reply, it sends each message you type, your recent coach conversation, and your latest scores to <span id="aiName">Anthropic</span> for processing. Your name and email are never sent. Messages that trigger the crisis check are never sent.</p>
+        <p>If you leave it off, you get offline reflection prompts that run entirely on this device. They are simple prompts, not AI.</p>
+        <div class="btn-row">
+          <button class="btn btn-primary" type="button" id="consentYes">Turn on live coach</button>
+          <button class="btn btn-ghost" type="button" id="consentNo">Keep it offline</button>
+        </div>
+      </div>
+
+      <div class="coach-thread" id="coachThread" role="log" aria-live="polite" aria-relevant="additions" aria-label="Coach conversation"></div>
+
+      <form class="coach-compose" id="coachForm" novalidate>
+        <div class="compose-inner">
+          <label for="coachInput" class="sr-only">Message to the coach</label>
+          <textarea id="coachInput" rows="1" maxlength="2000" placeholder="Tell me about your week."></textarea>
+          <button class="compose-send" id="coachSend" type="submit" aria-label="Send" disabled>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+        <p class="compose-note" id="coachNote">Offline prompts. Saved encrypted on this device.</p>
+      </form>
+    </section>
+
+    <!-- ===== SETTINGS ===== -->
+    <section class="view" role="tabpanel" id="view-settings" aria-labelledby="tab-settings" hidden>
+      <div class="greeting">
+        <p class="eyebrow">Your account</p>
+        <h2 tabindex="-1">Settings &amp; <em>data</em></h2>
+        <p id="acctLine"></p>
+      </div>
+
+      <div class="card setting">
+        <div class="setting-row">
+          <div>
+            <h3 id="liveLbl">Live AI coach</h3>
+            <p class="muted" id="liveDesc">Off. Coach replies are offline prompts and nothing leaves this device.</p>
+          </div>
+          <button class="toggle" id="liveToggle" type="button" role="switch" aria-checked="false" aria-labelledby="liveLbl" aria-describedby="liveDesc"></button>
+        </div>
+      </div>
+
+      <div class="card setting">
+        <h3>Your data</h3>
+        <p class="muted">Stored encrypted (AES-256-GCM) in this browser only. Nobody else, including the people who run this site, can read it.</p>
+        <div class="btn-row">
+          <button class="btn btn-ghost" type="button" id="exportBtn">Download my data</button>
+          <button class="btn btn-ghost" type="button" id="clearCoachBtn">Clear coach history</button>
+        </div>
+        <p class="muted small">The download is an unencrypted file. Keep it somewhere private.</p>
+        <p class="muted small">On iPhone and iPad, Safari can delete website data after about 7 days without a visit. Add Burnout Pulse to your Home Screen (Share, then Add to Home Screen) to prevent that, and download a copy now and then.</p>
+      </div>
+
+      <form class="card setting" id="passForm" novalidate>
+        <h3>Change passphrase</h3>
+        <p class="muted" id="passAdvice">Your passphrase is the encryption key for this account. Changing it re-encrypts everything.</p>
+        <div class="field">
+          <label for="curPass">Current passphrase</label>
+          <input type="password" id="curPass" autocomplete="current-password" />
+        </div>
+        <div class="field">
+          <label for="newPass">New passphrase (15+ characters)</label>
+          <input type="password" id="newPass" autocomplete="new-password" minlength="15" />
+        </div>
+        <p class="form-error" id="passError" role="alert" hidden></p>
+        <button class="btn btn-ghost" type="submit" id="passBtn">Change passphrase</button>
+      </form>
+
+      <div class="card setting danger">
+        <h3>Delete account</h3>
+        <p class="muted">Permanently erases your account and everything in it from this browser. This can't be undone.</p>
+        <div id="deleteStep1"><button class="btn btn-danger" type="button" id="deleteBtn">Delete my account</button></div>
+        <div id="deleteStep2" hidden>
+          <label for="deleteConfirm">Type DELETE to confirm</label>
+          <div class="btn-row">
+            <input type="text" id="deleteConfirm" autocomplete="off" spellcheck="false" />
+            <button class="btn btn-danger" type="button" id="deleteConfirmBtn">Erase everything</button>
+            <button class="btn btn-ghost" type="button" id="deleteCancelBtn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card setting">
+        <h3>About</h3>
+        <p class="muted">Burnout Pulse is a self-reflection tool, not a medical device, and not a diagnostic or treatment tool. The coach is an AI, or offline prompts when the live coach is off. It is not a clinician or counselor, and it can't contact anyone for you. Read the <a href="privacy.html" target="_blank" rel="noopener">privacy notice</a>, <a href="terms.html" target="_blank" rel="noopener">terms of use</a>, and <a href="safety.html" target="_blank" rel="noopener">safety protocol</a>. These open in a new tab so you stay signed in.</p>
+        <p class="muted small" id="versionLine"></p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot" id="footer" hidden>
+    <p>A self-reflection tool, not a diagnostic instrument. The coach is not a clinician. In crisis, call or text <a href="tel:988">988</a>.</p>
+    <p id="instLine"></p>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

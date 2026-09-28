@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="color-scheme" content="light dark" /><title>Safety protocol · Burnout Pulse</title><link rel="stylesheet" href="styles.css" /></head>
+<body><main class="shell doc" id="main"><p class="doc-back"><a href="index.html">&larr; Back to Burnout Pulse</a></p>
+<h1>Safety protocol</h1>
+<p>This is the published crisis protocol for Burnout Pulse. Several state chatbot laws require operators of conversational AI to publish their self-harm and suicide protocol and to disclose that the user is talking to an AI. Examples are California SB 243 (effective January 1, 2026) and New York General Business Law Article 47 (effective November 5, 2025). Whether a given deployment falls under a particular statute is a question for the deploying institution&#39;s counsel. This protocol is written to meet the stricter of them either way.</p>
+<h2>What the coach is</h2>
+<ul>
+<li><strong>Live AI coach:</strong> off by default, and turned on only after a consent screen that names the AI provider and what is sent. Every coach reply is labeled &quot;Coach (AI)&quot;.</li>
+<li><strong>Offline prompts:</strong> simple reflection prompts that run on the device. They are not AI, and every reply is labeled &quot;Offline prompt&quot;.</li>
+<li>A disclosure that the user is not talking to a person appears at the start of every coach session and again after three hours of continued use.</li>
+<li>The coach does not diagnose, treat, assess risk, advise on medication, or give clinical advice about patients. It never presents itself as a clinician, therapist, or counselor.</li>
+</ul>
+<h2>Detection</h2>
+<p>Every message is classified by <code>safety.js</code>, the same code in the browser and on the server, into three tiers:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Examples</th>
+<th>What happens</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Crisis</td>
+<td>First-person suicidal ideation, intent, or plan; self-harm; &quot;I don&#39;t want to wake up&quot;; asking how many pills it would take</td>
+<td>The coach stops. No generated reply. The crisis resources block is shown. The message is <strong>never sent</strong> to the AI provider and is excluded from all future context.</td>
+</tr>
+<tr>
+<td>Concern</td>
+<td>Clinically ambiguous language: &quot;patient overdosed&quot;, &quot;suicide rates&quot;, &quot;I can&#39;t do this anymore&quot;, &quot;hopeless&quot;</td>
+<td>The conversation continues, and a short resource note is attached below the reply.</td>
+</tr>
+<tr>
+<td>None</td>
+<td>Everything else, including dark humor (&quot;this case is killing me&quot;)</td>
+<td>Normal conversation.</td>
+</tr>
+</tbody></table>
+<p>Normalization defeats common evasions: iOS curly apostrophes, full-width characters, zero-width characters, repeated letters (&quot;diiiie&quot;), and simple digit substitution (&quot;k1ll&quot;).</p>
+<p>Each model reply is classified again on the server. A reply at crisis tier is replaced with the crisis response.</p>
+<h2>Crisis resources and their order</h2>
+<ol>
+<li><strong>988 Suicide &amp; Crisis Lifeline</strong>: call or text 988, available 24/7.</li>
+<li><strong>911</strong>, or the nearest emergency department, for immediate danger.</li>
+<li><strong>Crisis Text Line</strong>: text HOME to 741741, available 24/7.</li>
+<li><strong>Physician Support Line</strong>: 1-888-409-0141. Peer support from volunteer psychiatrists, 8am to 1am ET daily. It is not a crisis line, so it is listed last. (Hours verified at physiciansupportline.com/faq, September 2026.)</li>
+<li>Institution-specific resources set in <code>public/config.js</code>, such as peer support after adverse events or the employee assistance program.</li>
+</ol>
+<h2>Limits, stated plainly</h2>
+<ul>
+<li>Keyword detection is a floor, not a clinical screen. It will miss some ways of expressing risk and will flag some statements that aren&#39;t risk. The system prompt instructs the model to respond conservatively to any risk signal as a second layer.</li>
+<li>The app <strong>cannot contact anyone</strong>. It does not alert a program director, employer, or emergency services, and it says so to the user. This is deliberate: confidentiality is what makes an honest check-in possible. Any institution that wants escalation must design it with its own clinical governance, not bolt it onto this tool.</li>
+<li>The tool is intended for adult physicians and trainees. It is not designed for minors.</li>
+</ul>
+<h2>Review and change control</h2>
+<ul>
+<li>The safety rules are versioned (<code>BPSafety.version</code>, shown in Settings).</li>
+<li>Every change to <code>safety.js</code> must pass <code>tests/unit.test.mjs</code> and <code>tests/api.test.mjs</code>. Every phrase that was ever missed is added to the test suite as a regression case.</li>
+<li>A deploying institution should name a clinical safety owner, a psychiatrist or a clinician from the wellbeing program, to review this protocol before launch and at least every six months after.</li>
+<li>Where a statute requires annual reporting (California SB 243 requires reports to the Office of Suicide Prevention), the operator counts crisis-tier events. Because v13 is local-first, the operator has no count by default. A deployment that must report needs an anonymous, opt-in counter designed with counsel.</li>
+</ul>
+
+<p class="doc-back"><a href="index.html">&larr; Back to Burnout Pulse</a></p></main></body></html>

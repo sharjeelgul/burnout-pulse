@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'" />
+<meta name="color-scheme" content="light dark" /><title>Privacy notice · Burnout Pulse</title><link rel="stylesheet" href="styles.css" /></head>
+<body><main class="shell doc" id="main"><p class="doc-back"><a href="index.html">&larr; Back to Burnout Pulse</a></p>
+<h1>Privacy notice</h1>
+<p><strong>Effective date:</strong> [set on deployment]
+<strong>Operator:</strong> [legal name of the deploying institution or company, address, and privacy contact email]</p>
+<blockquote>
+<p>Template notice. The deploying operator&#39;s counsel must complete the bracketed fields and confirm this notice against the operator&#39;s own obligations before anyone uses the tool.</p>
+</blockquote>
+<h2>The short version</h2>
+<ul>
+<li>Your check-ins, notes, and coach conversation are <strong>encrypted on your device</strong> and never leave it.</li>
+<li>If you <strong>choose</strong> to turn on the live AI coach, the messages you send it go to [AI provider] to generate a reply. Nothing else does.</li>
+<li>The operator cannot read your data. There are no analytics, trackers, advertising, or cookies.</li>
+<li>The app never contacts your employer, program, or anyone else about you.</li>
+</ul>
+<h2>What is stored, and where</h2>
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Where</th>
+<th>Who can read it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Email, first name, check-in answers, scores, optional hours, call nights and adverse-event flag, coach conversation, settings</td>
+<td>This browser, encrypted with AES-256-GCM under a key derived from your passphrase</td>
+<td>Only someone who knows your passphrase</td>
+</tr>
+<tr>
+<td>A SHA-256 hash of your email, used to find your encrypted record</td>
+<td>This browser</td>
+<td>Anyone with access to the device could confirm that a known email has an account here, but not read anything</td>
+</tr>
+</tbody></table>
+<p>We do not have a copy. If you forget your passphrase, your data cannot be recovered by anyone.</p>
+<h2>What is sent, and only if you turn it on</h2>
+<p>The live AI coach is off until you agree on a consent screen. When it is on, each message you send the coach is transmitted to the operator&#39;s server function and then to [AI provider], together with:</p>
+<ul>
+<li>up to 12 of your recent coach messages, excluding anything flagged as a crisis message;</li>
+<li>your latest score, its band, which dimensions scored highest, whether the score went up or down, and whether you flagged an adverse event or more than 80 hours.</li>
+</ul>
+<p>Your name and email are <strong>never</strong> sent. Messages flagged as crisis messages are <strong>never</strong> sent. The operator&#39;s function does not log message content. [AI provider]&#39;s handling is governed by [the operator&#39;s agreement with the provider, including retention period and whether data may be used for training]. You can turn the live coach off at any time in Settings.</p>
+<h2>Your choices and rights</h2>
+<ul>
+<li><strong>Download:</strong> Settings, then &quot;Download my data&quot;, gives you everything in a JSON file.</li>
+<li><strong>Delete:</strong> Settings, then &quot;Delete account&quot;, permanently erases your account from this browser. &quot;Clear coach history&quot; erases only the conversation.</li>
+<li><strong>Withdraw consent:</strong> turn off the live coach in Settings.</li>
+</ul>
+<p>Depending on where you live, you may have additional rights over data the operator processes. [Operator to list applicable state rights and how to exercise them, for example under Maryland&#39;s Online Data Privacy Act, Washington&#39;s My Health My Data Act, or the California Consumer Privacy Act, where they apply.]</p>
+<h2>Health information</h2>
+<p>This tool collects information about your wellbeing. [Operator to state whether HIPAA applies. When an employer offers a wellbeing tool to its own workforce, the data is generally not protected health information, but that depends on the arrangement. For example, the answer can change if the tool is part of a group health plan or an employee assistance program.] Where HIPAA does not apply, the FTC Health Breach Notification Rule and state consumer-health-data laws may. The local-first design is intended to keep the operator from ever holding identifiable health data.</p>
+<h2>Security</h2>
+<p>See <code>SECURITY.md</code>. In short: encryption at rest, a strict content security policy, no third-party requests, an idle lock after [15] minutes, and a published penetration-test record.</p>
+<h2>Changes</h2>
+<p>We will post changes here with a new effective date. Material changes to what is sent off the device will require your consent again.</p>
+
+<p class="doc-back"><a href="index.html">&larr; Back to Burnout Pulse</a></p></main></body></html>
